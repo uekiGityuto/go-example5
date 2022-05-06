@@ -39,9 +39,12 @@ func JSONHandler(writer http.ResponseWriter, req *http.Request) {
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
 	if err := encoder.Encode(fortune); err != nil {
-		log.Fatal(err)
+		http.Error(writer, "処理中にエラーが発生しました。もう一度やり直してください", http.StatusInternalServerError)
 	}
-	fmt.Fprintln(writer, buffer.String())
+	_, err := fmt.Fprintln(writer, buffer.String())
+	if err != nil {
+		http.Error(writer, "処理中にエラーが発生しました。もう一度やり直してください", http.StatusInternalServerError)
+	}
 }
 
 func StringHandler(writer http.ResponseWriter, req *http.Request) {
@@ -62,7 +65,10 @@ func StringHandler(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	msg := name + "さんの運勢は「" + result + "」です！"
-	fmt.Fprintln(writer, msg)
+	_, err := fmt.Fprintln(writer, msg)
+	if err != nil {
+		http.Error(writer, "処理中にエラーが発生しました。もう一度やり直してください", http.StatusInternalServerError)
+	}
 }
 
 func Listen() {
@@ -70,5 +76,5 @@ func Listen() {
 	http.HandleFunc("/fortune/json", JSONHandler)
 	http.HandleFunc("/fortune/string", StringHandler)
 
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
